@@ -1,95 +1,72 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+// pages/index.js
+"use client"
+import React, { useState } from 'react';
+import "./Page.css"
 
-export default function Home() {
+const ImageConverter = () => {
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedFormat, setSelectedFormat] = useState('png');
+  const [convertedImage, setConvertedImage] = useState(null);
+
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    setSelectedImage(file);
+  };
+
+  const handleFormatChange = (event) => {
+    setSelectedFormat(event.target.value);
+  };
+
+  const convertImage = () => {
+    if (!selectedImage) return;
+
+    const reader = new FileReader();
+    reader.readAsDataURL(selectedImage);
+
+    reader.onload = () => {
+      const convertedImage = reader.result.replace(/^data:image\/[a-z]+;base64,/, '');
+      setConvertedImage(convertedImage);
+    };
+
+    reader.onerror = (error) => {
+      console.error('Error converting image:', error);
+    };
+  };
+
+  const downloadImage = () => {
+    if (!convertedImage) return;
+
+    const link = document.createElement('a');
+    link.href = `data:image/${selectedFormat};base64,${convertedImage}`;
+    link.download = `converted_image.${selectedFormat}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <div className="container">
+      <h1>Image Extension Converter</h1>
+      <input type="file" accept="image/*" onChange={handleImageChange} />
+      <div className="select-container">
+        <label>Choose format:</label>
+        <select value={selectedFormat} onChange={handleFormatChange}>
+          <option value="png">PNG</option>
+          <option value="jpeg">JPEG</option>
+          <option value="gif">GIF</option>
+          {/* Add more supported formats here */}
+        </select>
+      </div>
+      <button onClick={convertImage}>Convert Image</button>
+      {convertedImage && (
+        <div className="image-container">
+          <h2>Converted Image:</h2>
+          <img src={`data:image/${selectedFormat};base64,${convertedImage}`} alt="Converted" />
+          <button className="download-btn" onClick={downloadImage}>Download Image</button>
         </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+      )}
+    </div>
   );
-}
+};
+
+export default ImageConverter;
